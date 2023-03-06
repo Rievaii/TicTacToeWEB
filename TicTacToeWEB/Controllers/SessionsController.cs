@@ -84,6 +84,7 @@ namespace TicTacToeWEB.Controllers
             return CreatedAtAction("GetSession", new { id = session.SessionId }, session);
         }
         //HTTP PATCH 
+        //player1id != player2.id
         private bool SessionExists(int id)
         {
             return _context.Session.Any(e => e.SessionId == id);
