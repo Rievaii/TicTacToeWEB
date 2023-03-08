@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Build.Framework;
+using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using TicTacToeWEB;
 using TicTacToeWEB.Models;
@@ -15,79 +17,110 @@ namespace TicTacToeWEB.Controllers
     public class SessionsController : ControllerBase
     {
         private readonly Context _context;
+        Random random = new Random();
 
         public SessionsController(Context context)
         {
             _context = context;
         }
 
-        // GET: api/Sessions
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Session>>> GetSession()
+        // POST: api/Sessions - Start new game
+        [HttpPost]
+        public async Task<ActionResult> StartNewGame(int player1Id, int player2Id)
         {
-            return await _context.Session.ToListAsync();
-        }
-
-        // GET: api/Sessions/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Session>> GetSession(int id)
-        {
-            var session = await _context.Session.FindAsync(id);
-
-            if (session == null)
+            if (player1Id != player2Id)
             {
-                return NotFound();
+                Session newGame = new Session()
+                {
+                    GameOver = false,
+                    Field = new Field()
+                    { 
+                        TotalMoves = 0
+                    },
+                    Player1Id = player1Id,
+                    Player2Id = player2Id,
+                    GameId = random.Next(0, 99999),
+                    Turn = true
+                };
+                _context.Session.Add(newGame);
+                await _context.SaveChangesAsync();
+
+                return Ok("Game created with id: " + newGame.GameId);
             }
-
-            return session;
+            else
+            {
+                return BadRequest("Player Id's cannot be same value");
+            }
         }
 
-        // PUT: api/Sessions/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutSession(int id, Session session)
+        public async Task<IActionResult> MakeMove(int GameId, int PlayerId, int Cell)
         {
-            if (id != session.SessionId)
+            //=> you made a move
+            //=> cell is already busy 
+
+            var Game = _context.Session.Where(i => i.GameId == GameId);
+
+            if (Game == null)
             {
+                return NotFound("Game with such Id does not exist");
+            }
+            
+            if (GameAvailable(GameId) && Game.Any(q => q.Field.TotalMoves < 9))
+            {
+                //check if it is the last move -> 9 move
+                //check who's turn => place such char into requered cell if it is not busy 
+
+                if (Game.Any(j => j.Turn == true))
+                {
+                    //place X
+                    //HTTP PATCH = make move
+                    //totalmoves++;
+
+                }
+                if (Game.Any(j => j.Turn == false))
+                {
+                    //place O
+                    //HTTP PATCH = make move
+                    //totalmoves++;
+                }
+                return Ok("You made a move");
+            }
+            else if() 
+            {
+                //check if cell is busy of unavailable
                 return BadRequest();
             }
-
-            _context.Entry(session).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!SessionExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
         }
+        
 
-        // POST: api/Sessions
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<Session>> PostSession(Session session)
+        private bool GameAvailable(int Gameid)
         {
-            _context.Session.Add(session);
-            await _context.SaveChangesAsync();
+            
+            if (_context.Session.Where(g => g.GameId == Gameid).Any(i => i.GameOver == false))
+            {
 
-            return CreatedAtAction("GetSession", new { id = session.SessionId }, session);
+                return true;
+            }
+            else
+            {
+                return false; 
+            }
         }
-        //HTTP PATCH 
-        //player1id != player2.id
-        private bool SessionExists(int id)
+        private bool isGameWon(int GameId)
         {
-            return _context.Session.Any(e => e.SessionId == id);
+            //GAME CAN ALREADY BE WON 
+            /* get cells != '?' and if this cells have the same char on positions => GameOver
+             * 0 1 2
+             * 3 4 5 
+             * 5 6 7 
+             * 
+             * (0,1,2) (3,4,5) (5,6,7)
+             * (0,3,5) (1,4,6) (2,5,7)
+             * (0,4,7) (2,4,5)
+             * 
+            */
+
+            //get players => whos was the last turn and condition above approved => won the game 
         }
     }
 }

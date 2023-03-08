@@ -20,7 +20,7 @@ namespace TicTacToeWEB.Models
         public int Player2Id { get; set;}
 
         [Required]
-        public string GameId { get; set;}
+        public int GameId { get; set;}
 
         //очередность хода true - крестик, false - нолик
         [Required]
