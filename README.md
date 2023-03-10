@@ -11,4 +11,5 @@
  
  if session not found => NotFound();
  
+ MakeMove() does not search any entities is just calls methods from IField
  
