@@ -13,3 +13,6 @@
  
  MakeMove() does not search any entities is just calls methods from IField
  
+состояние клеток можно отслеживать через enum 
+
+сложно подключить dbcontext в custom class
