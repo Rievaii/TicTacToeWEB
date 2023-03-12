@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Build.Framework;
 using Microsoft.CodeAnalysis;
-using Microsoft.EntityFrameworkCore;
-using TicTacToeWEB;
-using TicTacToeWEB.Models;
+using TicTacToeWEB.Handlers;
+using TicTacToeWEB.Models.Data;
 
 namespace TicTacToeWEB.Controllers
 {
@@ -19,12 +13,14 @@ namespace TicTacToeWEB.Controllers
         private readonly Context _context;
         Random random = new Random();
 
+        private FieldHandler fieldHandler = new FieldHandler();
         public SessionsController(Context context)
         {
             _context = context;
         }
 
         // POST: api/Sessions - Start new game
+        [Route("api/StartGame")]
         [HttpPost]
         public async Task<ActionResult> StartNewGame(int player1Id, int player2Id)
         {
@@ -34,116 +30,90 @@ namespace TicTacToeWEB.Controllers
                 {
                     GameOver = false,
                     Field = new Field()
-                    { 
+                    {
                         TotalMoves = 0
                     },
                     Player1Id = player1Id,
                     Player2Id = player2Id,
-                    GameId = random.Next(0, 99999),
                     Turn = true
                 };
                 _context.Session.Add(newGame);
                 await _context.SaveChangesAsync();
 
-                return Ok("Game created with id: " + newGame.GameId);
+                return Ok("Game created with id: " + newGame.SessionId);
             }
             else
             {
                 return BadRequest("Player Id's cannot be same value");
             }
         }
-
+        [Route("api/MakeMove")]
         [HttpPatch]
-        public async Task<IActionResult> MakeMove(int GameId, int PlayerId, int Cell)
+        public async Task<IActionResult> MakeMove(int _SessionId, int _PlayerId, int _Cell)
         {
-            //=> you made a move
-            //=> cell is already busy 
 
-            var Game = _context.Session.Where(i => i.GameId == GameId);
-            
+            var Game = _context.Session.SingleOrDefault(i => i.SessionId == _SessionId);
+            var Field = _context.Field.SingleOrDefault(i => i.SessionId == _SessionId);
             if (Game == null)
             {
                 return NotFound("Game with such Id does not exist");
             }
-            
-            if (GameAvailable(GameId) && Game.Any(q => q.Field.TotalMoves < 9))
-            {
-                //check if it is the last move -> 9 move
-                //check who's turn => place such char into requered cell if it is not busy 
 
-                if (Game.Any(j => j.Turn == true))
+            //Move can be done && No one yet won && cell is not occupied
+            if (Field.TotalMoves < 9 && Game.GameOver==false && fieldHandler.isCellOccupied(GetFieldCells(_SessionId), _Cell))
+            {
+                //check who s turn 
+                if (Game.Turn == true && Game.Player1Id == _PlayerId)
                 {
                     //place X
-                    //HTTP PATCH = make move
-                    //totalmoves++;
+                    Field CellUpdate = new Field()
+                    {
+                        //map tiles
+                        Tile0 = 'X',
+                    };
 
+                    //totalmoves++;
+                    Field.TotalMoves++;
+
+                    //turn false
+                    Game.Turn = false;
+                    //check win => gameover = true
+                    _context.Field.Add(CellUpdate);
+                    await _context.SaveChangesAsync();
                 }
-                if (Game.Any(j => j.Turn == false))
+                else if (Game.Turn == false && Game.Player2Id == _PlayerId)
                 {
                     //place O
                     //HTTP PATCH = make move
                     //totalmoves++;
+                    //turn true
                 }
+                else
+                {
+                    return BadRequest("It is not your turn");
+                }
+                //save changes
                 return Ok("You made a move");
-            }
-            else 
-            {
-                //else if
-                //check if cell is busy of unavailable
-                return BadRequest();
-            }
-        }
-        
-
-        private bool GameAvailable(int Gameid)
-        {
-            if (_context.Session.Where(g => g.GameId == Gameid).Any(i => i.GameOver == false))
-            {
-
-                return true;
             }
             else
             {
-                return false; 
+                return BadRequest("Unable to make such move");
             }
         }
-        [HttpGet]
-        public IActionResult isGameWon(int _SessionId)
+        //GET LAST MOVE IN GAME method
+        [ApiExplorerSettings(IgnoreApi = true)]
+        public List<char> GetFieldCells(int _SessionId)
         {
-            //GAME CAN ALREADY BE WON 
-            /* get cells != '?' and if this cells have the same char on positions => GameOver
-             * 0 1 2
-             * 3 4 5 
-             * 5 6 7 
-             * 
-             * (0,1,2) (3,4,5) (5,6,7)
-             * (0,3,5) (1,4,6) (2,5,7)
-             * (0,4,7) (2,4,5)
-             * 
-            */
-
-            //get players => whos was the last turn and condition above approved => won the game 
-            //get all tiles where sesseion id is the same as gameid session id 
             var CurrentSession = _context.Field.Where(i => i.SessionId == _SessionId);
-            List<char?> FieldCells = new List<char?>();
-            var news = "";
-            foreach(var Cell in CurrentSession)
+
+            List<char> FieldCells = new List<char>();
+            foreach (var Cell in CurrentSession)
             {
-                FieldCells.Add(Cell.Tile0);
-                FieldCells.Add(Cell.Tile1);
-                FieldCells.Add(Cell.Tile2);
-                FieldCells.Add(Cell.Tile3);
-                FieldCells.Add(Cell.Tile4);
-                FieldCells.Add(Cell.Tile5);
-                FieldCells.Add(Cell.Tile6);
-                FieldCells.Add(Cell.Tile7);
-                FieldCells.Add(Cell.Tile8);
-
-                //... others
-
-
+                FieldCells.Add(Cell.Tile0); FieldCells.Add(Cell.Tile1); FieldCells.Add(Cell.Tile2);
+                FieldCells.Add(Cell.Tile3); FieldCells.Add(Cell.Tile4); FieldCells.Add(Cell.Tile5);
+                FieldCells.Add(Cell.Tile6); FieldCells.Add(Cell.Tile7); FieldCells.Add(Cell.Tile8);
             }
-            return Ok(news);
+            return FieldCells;
         }
     }
 }
