@@ -11,7 +11,7 @@ namespace TicTacToeWEB.Models.Data
         public bool GameOver { get; set; }
 
         [Required]
-        public Field Field { get; set; }
+        public Field? Field { get; set; }
 
         [Required]
         public int Player1Id { get; set; }

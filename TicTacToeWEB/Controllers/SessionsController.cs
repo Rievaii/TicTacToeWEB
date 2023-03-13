@@ -53,40 +53,59 @@ namespace TicTacToeWEB.Controllers
         {
 
             var Game = _context.Session.SingleOrDefault(i => i.SessionId == _SessionId);
-            var Field = _context.Field.SingleOrDefault(i => i.SessionId == _SessionId);
+            var AssignedField = _context.Field.SingleOrDefault(i => i.SessionId == _SessionId);
+            var Cell = _context.Field.Where(s=>s.SessionId == _SessionId).Select(x => x.)
+            
             if (Game == null)
             {
                 return NotFound("Game with such Id does not exist");
             }
 
             //Move can be done && No one yet won && cell is not occupied
-            if (Field.TotalMoves < 9 && Game.GameOver==false && fieldHandler.isCellOccupied(GetFieldCells(_SessionId), _Cell))
+            if (AssignedField.TotalMoves < 9 && Game.GameOver==false && fieldHandler.isCellOccupied(GetFieldCells(_SessionId), _Cell))
             {
                 //check who s turn 
                 if (Game.Turn == true && Game.Player1Id == _PlayerId)
                 {
                     //place X
-                    Field CellUpdate = new Field()
-                    {
-                        //map tiles
-                        Tile0 = 'X',
-                    };
+                    
+                    
 
                     //totalmoves++;
-                    Field.TotalMoves++;
+                    AssignedField.TotalMoves++;
 
                     //turn false
                     Game.Turn = false;
-                    //check win => gameover = true
-                    _context.Field.Add(CellUpdate);
+
+                    //isGameOver
+                    if (AssignedField.TotalMoves == 9)
+                    {
+                        //check win 
+                        Game.GameOver = true;
+                    }
+
                     await _context.SaveChangesAsync();
                 }
                 else if (Game.Turn == false && Game.Player2Id == _PlayerId)
                 {
                     //place O
-                    //HTTP PATCH = make move
+                    //Map values
+                    AssignedField.Tile0 = 'O';
+
                     //totalmoves++;
-                    //turn true
+                    AssignedField.TotalMoves++;
+
+                    //turn false
+                    Game.Turn = true;
+
+                    //isGameOver
+                    if(AssignedField.TotalMoves == 9)
+                    {
+                        //check win
+                        Game.GameOver = true;
+                    }
+
+                    await _context.SaveChangesAsync();
                 }
                 else
                 {

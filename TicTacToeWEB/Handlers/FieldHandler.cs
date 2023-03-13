@@ -1,6 +1,6 @@
 ﻿namespace TicTacToeWEB.Handlers
 {
-    public class FieldHandler : IFieldHandler
+    public class FieldHandler
     {
 
         public static string CheckWin(List<char> FieldCells)
@@ -57,7 +57,7 @@
                 return winner;
             }
 
-            else if (FieldCells[0] != '?' && FieldCells[1] != '?' && FieldCells[2] != '?' && FieldCells[3] != '?' && FieldCells[4] != '?' && FieldCells[5] != '?' && FieldCells[6] != '?' && FieldCells[7] != '?' && FieldCells[8] != '?')
+            else if (FieldCells[0] != '0' && FieldCells[1] != '1' && FieldCells[2] != '2' && FieldCells[3] != '3' && FieldCells[4] != '4' && FieldCells[5] != '5' && FieldCells[6] != '6' && FieldCells[7] != '7' && FieldCells[8] != '8')
             {
                 //game is ended no one won
                 winner = "Draw";
@@ -72,32 +72,16 @@
             if (Cell > 8) { throw new IndexOutOfRangeException(); }
             else
             {
-                if (FieldGrid[Cell] != '?')
+                if (FieldGrid[Cell] == 'X' || FieldGrid[Cell] == 'O')
                 {
-                    return false;
+                    return true;
                 }
                 else
                 {
-                    return true;
+                    return false;
                 }
             }
 
         }
-        //public List<char> GetFieldCells(int _SessionId)
-        //{
-        //    using (var _context = new Context())
-        //    {
-        //        var CurrentSession = _context.Field.Where(i => i.SessionId == _SessionId);
-
-        //        List<char> FieldCells = new List<char>();
-        //        foreach (var Cell in CurrentSession)
-        //        {
-        //            FieldCells.Add(Cell.Tile0); FieldCells.Add(Cell.Tile1); FieldCells.Add(Cell.Tile2);
-        //            FieldCells.Add(Cell.Tile3); FieldCells.Add(Cell.Tile4); FieldCells.Add(Cell.Tile5);
-        //            FieldCells.Add(Cell.Tile6); FieldCells.Add(Cell.Tile7); FieldCells.Add(Cell.Tile8);
-        //        }
-        //        return FieldCells;
-        //    }
-        //}
     }
 }

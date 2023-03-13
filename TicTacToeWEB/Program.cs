@@ -17,9 +17,9 @@ using (var client = new Context())
 
         Field = new Field 
         {
-            Tile0 = 'o', Tile1 = 'x', Tile2 = 'o',
-            Tile3 = 'x', Tile4 = 'o', Tile5 = 'x',
-            Tile6 = 'x', Tile7 = 'o', Tile8 = 'o',
+            Tile0 = 'O', Tile1 = 'X', Tile2 = 'O',
+            Tile3 = 'X', Tile4 = 'O', Tile5 = 'X',
+            Tile6 = 'X', Tile7 = 'O', Tile8 = 'O',
             TotalMoves = 8
         },
     };
