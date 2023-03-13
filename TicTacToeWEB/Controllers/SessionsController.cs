@@ -37,7 +37,7 @@ namespace TicTacToeWEB.Controllers
                 };
                 _context.Session.Add(newGame);
                 await _context.SaveChangesAsync();
-
+                //check if move => win => X won else return OK(you made a move)
                 return Ok("Game created with id: " + newGame.SessionId);
             }
             else
@@ -60,9 +60,8 @@ namespace TicTacToeWEB.Controllers
             }
 
             //Move can be done && No one yet won && cell is not occupied
-            if (AssignedField.TotalMoves < 9 && Game.GameOver==false && !FieldHandler.isCellOccupied(GetFieldCells(_SessionId), _Cell))
+            if (AssignedField.TotalMoves < 9 && Game.GameOver==false && !FieldHandler.isOccupied(_SessionId,_Cell))
             {
-                //check who s turn 
                 if (Game.Turn == true && Game.Player1Id == _PlayerId)
                 {
                     //place X
@@ -79,34 +78,28 @@ namespace TicTacToeWEB.Controllers
                         //check win 
                         Game.GameOver = true;
                     }
-
+                    //check if this move wins the game
                     await _context.SaveChangesAsync();
                 }
                 else if (Game.Turn == false && Game.Player2Id == _PlayerId)
                 {
-                    //place O
                     MapCells(_SessionId, _Cell, 'O');
 
-                    //totalmoves++;
                     AssignedField.TotalMoves++;
 
-                    //turn false
                     Game.Turn = true;
 
-                    //isGameOver
                     if(AssignedField.TotalMoves == 9)
                     {
-                        //check win
                         Game.GameOver = true;
                     }
-
+                    //check if this move wins the game
                     await _context.SaveChangesAsync();
                 }
                 else
                 {
                     return BadRequest("It is not your turn");
                 }
-                //save changes
                 return Ok("You made a move");
             }
             else
@@ -115,20 +108,23 @@ namespace TicTacToeWEB.Controllers
             }
         }
         //GET LAST MOVE IN GAME method
-        [ApiExplorerSettings(IgnoreApi = true)]
-        public List<char> GetFieldCells(int _SessionId)
-        {
-            var CurrentSession = _context.Field.Where(i => i.SessionId == _SessionId);
 
-            List<char> FieldCells = new List<char>();
-            foreach (var Cell in CurrentSession)
-            {
-                FieldCells.Add(Cell.Tile0); FieldCells.Add(Cell.Tile1); FieldCells.Add(Cell.Tile2);
-                FieldCells.Add(Cell.Tile3); FieldCells.Add(Cell.Tile4); FieldCells.Add(Cell.Tile5);
-                FieldCells.Add(Cell.Tile6); FieldCells.Add(Cell.Tile7); FieldCells.Add(Cell.Tile8);
-            }
-            return FieldCells;
-        }
+        //[ApiExplorerSettings(IgnoreApi = true)]
+        //public List<char> GetFieldCells(int _SessionId)
+        //{
+        //    var CurrentSession = _context.Field.Where(i => i.SessionId == _SessionId);
+
+        //    List<char> FieldCells = new List<char>();
+        //    foreach (var Cell in CurrentSession)
+        //    {
+        //        FieldCells.Add(Cell.Tile0); FieldCells.Add(Cell.Tile1); FieldCells.Add(Cell.Tile2);
+        //        FieldCells.Add(Cell.Tile3); FieldCells.Add(Cell.Tile4); FieldCells.Add(Cell.Tile5);
+        //        FieldCells.Add(Cell.Tile6); FieldCells.Add(Cell.Tile7); FieldCells.Add(Cell.Tile8);
+        //    }
+        //    return FieldCells;
+        //}
+
+
         //GET LAST MOVE IN GAME method
         [ApiExplorerSettings(IgnoreApi = true)]
         public void MapCells(int _SessionId, int Cell, char mark)
@@ -137,7 +133,7 @@ namespace TicTacToeWEB.Controllers
 
             if(Cell <= 8)
             {
-                switch(Cell )
+                switch(Cell)
                 {
                     case 0: AssignedCell.Tile0 = mark; break; case 1: AssignedCell.Tile1 = mark; break; case 2: AssignedCell.Tile2 = mark; break;
                     case 3: AssignedCell.Tile3 = mark; break; case 4: AssignedCell.Tile4 = mark; break; case 5: AssignedCell.Tile5 = mark; break;

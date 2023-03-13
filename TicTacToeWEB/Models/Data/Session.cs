@@ -22,7 +22,5 @@ namespace TicTacToeWEB.Models.Data
         //очередность хода true - крестик, false - нолик
         [Required]
         public bool Turn { get; set; }
-
-
     }
 }

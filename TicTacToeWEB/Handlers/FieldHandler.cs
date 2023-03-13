@@ -1,4 +1,6 @@
-﻿namespace TicTacToeWEB.Handlers
+﻿using TicTacToeWEB.Models.Data;
+
+namespace TicTacToeWEB.Handlers
 {
     public static class FieldHandler
     {
@@ -64,24 +66,29 @@
                 return winner;
             }
             return winner;
-
         }
-
-        public static bool isCellOccupied(List<char> FieldGrid, int Cell)
+        public static bool isOccupied(int _SessionId, int _Cell)
         {
-            if (Cell > 8) { throw new IndexOutOfRangeException(); }
-            else
+            using (var client = new Context())
             {
-                if (FieldGrid[Cell] == 'X' || FieldGrid[Cell] == 'O')
+                var CurrentSession = client.Field.Where(i => i.SessionId == _SessionId);
+
+                List<char> FieldCells = new List<char>();
+                foreach (var Cell in CurrentSession)
                 {
-                    return true;
+                    FieldCells.Add(Cell.Tile0); FieldCells.Add(Cell.Tile1); FieldCells.Add(Cell.Tile2);
+                    FieldCells.Add(Cell.Tile3); FieldCells.Add(Cell.Tile4); FieldCells.Add(Cell.Tile5);
+                    FieldCells.Add(Cell.Tile6); FieldCells.Add(Cell.Tile7); FieldCells.Add(Cell.Tile8);
                 }
-                else
+                if(FieldCells.Count>0)
                 {
                     return false;
                 }
+                else
+                {
+                    return true;
+                }
             }
-
         }
     }
 }
