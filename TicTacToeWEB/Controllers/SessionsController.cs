@@ -1,5 +1,4 @@
-﻿
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis;
 using TicTacToeWEB.Handlers;
 using TicTacToeWEB.Models.Data;
@@ -13,7 +12,6 @@ namespace TicTacToeWEB.Controllers
         private readonly Context _context;
         Random random = new Random();
 
-        private FieldHandler fieldHandler = new FieldHandler();
         public SessionsController(Context context)
         {
             _context = context;
@@ -51,26 +49,24 @@ namespace TicTacToeWEB.Controllers
         [HttpPatch]
         public async Task<IActionResult> MakeMove(int _SessionId, int _PlayerId, int _Cell)
         {
-
+            
             var Game = _context.Session.SingleOrDefault(i => i.SessionId == _SessionId);
             var AssignedField = _context.Field.SingleOrDefault(i => i.SessionId == _SessionId);
-            var Cell = _context.Field.Where(s=>s.SessionId == _SessionId).Select(x => x.)
             
+
             if (Game == null)
             {
                 return NotFound("Game with such Id does not exist");
             }
 
             //Move can be done && No one yet won && cell is not occupied
-            if (AssignedField.TotalMoves < 9 && Game.GameOver==false && fieldHandler.isCellOccupied(GetFieldCells(_SessionId), _Cell))
+            if (AssignedField.TotalMoves < 9 && Game.GameOver==false && !FieldHandler.isCellOccupied(GetFieldCells(_SessionId), _Cell))
             {
                 //check who s turn 
                 if (Game.Turn == true && Game.Player1Id == _PlayerId)
                 {
                     //place X
-                    
-                    
-
+                    MapCells(_SessionId, _Cell, 'X');
                     //totalmoves++;
                     AssignedField.TotalMoves++;
 
@@ -89,8 +85,7 @@ namespace TicTacToeWEB.Controllers
                 else if (Game.Turn == false && Game.Player2Id == _PlayerId)
                 {
                     //place O
-                    //Map values
-                    AssignedField.Tile0 = 'O';
+                    MapCells(_SessionId, _Cell, 'O');
 
                     //totalmoves++;
                     AssignedField.TotalMoves++;
@@ -133,6 +128,22 @@ namespace TicTacToeWEB.Controllers
                 FieldCells.Add(Cell.Tile6); FieldCells.Add(Cell.Tile7); FieldCells.Add(Cell.Tile8);
             }
             return FieldCells;
+        }
+        //GET LAST MOVE IN GAME method
+        [ApiExplorerSettings(IgnoreApi = true)]
+        public void MapCells(int _SessionId, int Cell, char mark)
+        {
+            var AssignedCell = _context.Field.FirstOrDefault(i => i.SessionId == _SessionId);
+
+            if(Cell <= 8)
+            {
+                switch(Cell )
+                {
+                    case 0: AssignedCell.Tile0 = mark; break; case 1: AssignedCell.Tile1 = mark; break; case 2: AssignedCell.Tile2 = mark; break;
+                    case 3: AssignedCell.Tile3 = mark; break; case 4: AssignedCell.Tile4 = mark; break; case 5: AssignedCell.Tile5 = mark; break;
+                    case 6: AssignedCell.Tile6 = mark; break; case 7: AssignedCell.Tile7 = mark; break; case 8: AssignedCell.Tile8 = mark; break;
+                }
+            }
         }
     }
 }

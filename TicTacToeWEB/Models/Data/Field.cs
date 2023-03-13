@@ -23,5 +23,6 @@ namespace TicTacToeWEB.Models.Data
         public char Tile3 { get; set; } = '3'; public char Tile4 { get; set; } = '4'; public char Tile5 { get; set; } = '5';
 
         public char Tile6 { get; set; } = '6'; public char Tile7 { get; set; } = '7'; public char Tile8 { get; set; } = '8';
+
     }
 }

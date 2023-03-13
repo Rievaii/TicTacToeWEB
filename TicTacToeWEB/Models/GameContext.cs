@@ -20,6 +20,7 @@ public class Context : DbContext
                     .HasOne(a => a.Field)
                     .WithOne(b => b.Session)
                     .OnDelete(DeleteBehavior.Cascade);
+        
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

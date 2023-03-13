@@ -1,6 +1,6 @@
 ﻿namespace TicTacToeWEB.Handlers
 {
-    public class FieldHandler
+    public static class FieldHandler
     {
 
         public static string CheckWin(List<char> FieldCells)
@@ -67,7 +67,7 @@
 
         }
 
-        public bool isCellOccupied(List<char> FieldGrid, int Cell)
+        public static bool isCellOccupied(List<char> FieldGrid, int Cell)
         {
             if (Cell > 8) { throw new IndexOutOfRangeException(); }
             else
