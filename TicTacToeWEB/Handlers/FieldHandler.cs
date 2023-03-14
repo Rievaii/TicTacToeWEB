@@ -67,27 +67,16 @@ namespace TicTacToeWEB.Handlers
             }
             return winner;
         }
-        public static bool isOccupied(int _SessionId, int _Cell)
-        {
-            using (var client = new Context())
-            {
-                var CurrentSession = client.Field.Where(i => i.SessionId == _SessionId);
 
-                List<char> FieldCells = new List<char>();
-                foreach (var Cell in CurrentSession)
-                {
-                    FieldCells.Add(Cell.Tile0); FieldCells.Add(Cell.Tile1); FieldCells.Add(Cell.Tile2);
-                    FieldCells.Add(Cell.Tile3); FieldCells.Add(Cell.Tile4); FieldCells.Add(Cell.Tile5);
-                    FieldCells.Add(Cell.Tile6); FieldCells.Add(Cell.Tile7); FieldCells.Add(Cell.Tile8);
-                }
-                if(FieldCells.Count>0)
-                {
-                    return false;
-                }
-                else
-                {
-                    return true;
-                }
+        public static bool isCellOccupied(List<char> CellField, int _Cell)
+        {
+            if (CellField[_Cell] != 'X' || CellField[_Cell] != 'O')
+            {
+                return false;
+            }
+            else
+            {
+                return true;
             }
         }
     }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis;
+using NuGet.Versioning;
 using TicTacToeWEB.Handlers;
 using TicTacToeWEB.Models.Data;
 
@@ -17,7 +18,7 @@ namespace TicTacToeWEB.Controllers
             _context = context;
         }
 
-        // POST: api/Sessions - Start new game
+        // POST - Start new game
         [Route("api/StartGame")]
         [HttpPost]
         public async Task<ActionResult> StartNewGame(int player1Id, int player2Id)
@@ -45,6 +46,8 @@ namespace TicTacToeWEB.Controllers
                 return BadRequest("Player Id's cannot be same value");
             }
         }
+
+        // PATCH - Make a move 
         [Route("api/MakeMove")]
         [HttpPatch]
         public async Task<IActionResult> MakeMove(int _SessionId, int _PlayerId, int _Cell)
@@ -60,38 +63,39 @@ namespace TicTacToeWEB.Controllers
             }
 
             //Move can be done && No one yet won && cell is not occupied
-            if (AssignedField.TotalMoves < 9 && Game.GameOver==false && !FieldHandler.isOccupied(_SessionId,_Cell))
+            if (AssignedField.TotalMoves < 9 && Game.GameOver==false && !FieldHandler.isCellOccupied(GetFieldCells(2),_Cell))
             {
                 if (Game.Turn == true && Game.Player1Id == _PlayerId)
                 {
                     //place X
                     MapCells(_SessionId, _Cell, 'X');
-                    //totalmoves++;
+
                     AssignedField.TotalMoves++;
 
-                    //turn false
                     Game.Turn = false;
 
                     //isGameOver
-                    if (AssignedField.TotalMoves == 9)
+                    if (AssignedField.TotalMoves == 9 | FieldHandler.CheckWin(GetFieldCells(2)) != "")
                     {
-                        //check win 
                         Game.GameOver = true;
+                        return Ok("Gameover. " + FieldHandler.CheckWin(GetFieldCells(2)));
                     }
                     //check if this move wins the game
                     await _context.SaveChangesAsync();
                 }
                 else if (Game.Turn == false && Game.Player2Id == _PlayerId)
                 {
+                    //place O
                     MapCells(_SessionId, _Cell, 'O');
 
                     AssignedField.TotalMoves++;
 
                     Game.Turn = true;
 
-                    if(AssignedField.TotalMoves == 9)
+                    if (AssignedField.TotalMoves == 9 | FieldHandler.CheckWin(GetFieldCells(2)) != "")
                     {
                         Game.GameOver = true;
+                        return Ok("Gameover. " + FieldHandler.CheckWin(GetFieldCells(2)));
                     }
                     //check if this move wins the game
                     await _context.SaveChangesAsync();
@@ -107,25 +111,36 @@ namespace TicTacToeWEB.Controllers
                 return BadRequest("Unable to make such move");
             }
         }
-        //GET LAST MOVE IN GAME method
 
-        //[ApiExplorerSettings(IgnoreApi = true)]
-        //public List<char> GetFieldCells(int _SessionId)
-        //{
-        //    var CurrentSession = _context.Field.Where(i => i.SessionId == _SessionId);
+        [HttpGet]
+        public async Task<IActionResult> GetGameById(int _SessionId)
+        {
+            var Game = await _context.Field.FindAsync(_SessionId);
 
-        //    List<char> FieldCells = new List<char>();
-        //    foreach (var Cell in CurrentSession)
-        //    {
-        //        FieldCells.Add(Cell.Tile0); FieldCells.Add(Cell.Tile1); FieldCells.Add(Cell.Tile2);
-        //        FieldCells.Add(Cell.Tile3); FieldCells.Add(Cell.Tile4); FieldCells.Add(Cell.Tile5);
-        //        FieldCells.Add(Cell.Tile6); FieldCells.Add(Cell.Tile7); FieldCells.Add(Cell.Tile8);
-        //    }
-        //    return FieldCells;
-        //}
+            if (Game == null)
+            {
+                return NotFound();
+            }
+            
+            return Ok(Game);
+        }
 
 
-        //GET LAST MOVE IN GAME method
+        [ApiExplorerSettings(IgnoreApi = true)]
+        public List<char> GetFieldCells(int _SessionId)
+        {
+            var CurrentSession = _context.Field.Where(i => i.SessionId == _SessionId);
+
+            List<char> FieldCells = new List<char>();
+            foreach (var Cell in CurrentSession)
+            {
+                FieldCells.Add(Cell.Tile0); FieldCells.Add(Cell.Tile1); FieldCells.Add(Cell.Tile2);
+                FieldCells.Add(Cell.Tile3); FieldCells.Add(Cell.Tile4); FieldCells.Add(Cell.Tile5);
+                FieldCells.Add(Cell.Tile6); FieldCells.Add(Cell.Tile7); FieldCells.Add(Cell.Tile8);
+            }
+            return FieldCells;
+        }
+
         [ApiExplorerSettings(IgnoreApi = true)]
         public void MapCells(int _SessionId, int Cell, char mark)
         {
